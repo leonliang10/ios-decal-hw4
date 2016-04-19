@@ -130,6 +130,17 @@ class PlayerViewController: UIViewController {
         let track = tracks[currentIndex]
         let url = NSURL(string: "https://api.soundcloud.com/tracks/\(track.id)/stream?client_id=\(clientID)")!
         // FILL ME IN
+        
+        if (player.currentItem == nil) {
+            player = AVPlayer(playerItem: AVPlayerItem(URL: url))
+        }
+        
+        if playPauseButton.selected {
+            player.pause()
+        } else {
+            player.play()
+        }
+        playPauseButton.selected = !playPauseButton.selected
     
     }
     
@@ -140,6 +151,16 @@ class PlayerViewController: UIViewController {
      * Remember to update the currentIndex
      */
     func nextTrackTapped(sender: UIButton) {
+        if (currentIndex + 1 < tracks.count) { // case where there is a next track
+            currentIndex = currentIndex + 1
+            loadTrackElements()
+            let nextTrack = tracks[currentIndex]
+            let nextTrackURL = AVPlayerItem(URL: nextTrack.getURL())
+            player.replaceCurrentItemWithPlayerItem(nextTrackURL)
+            if playPauseButton.selected { // automatically play song if song was already playing
+                player.play()
+            }
+        }
     
     }
 
@@ -154,7 +175,21 @@ class PlayerViewController: UIViewController {
      */
 
     func previousTrackTapped(sender: UIButton) {
-    
+        // case where song has been playing for less than 3 seconds
+        if player.currentTime().seconds <= 3 {
+            if currentIndex > 0 { // case where there is a previous track
+                currentIndex = currentIndex - 1
+                loadTrackElements()
+                let previousTrack = tracks[currentIndex]
+                let previousTrackURL = AVPlayerItem(URL: previousTrack.getURL())
+                player.replaceCurrentItemWithPlayerItem(previousTrackURL)
+            }
+        } else { // case where song has been playing for more than 3 seconds
+            player.seekToTime(kCMTimeZero)
+        }
+        if playPauseButton.selected { // automatically play song if song was already playing
+            player.play()
+        }
     }
     
     
